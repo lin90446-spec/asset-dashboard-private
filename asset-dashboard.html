@@ -1085,12 +1085,48 @@
 
     let ledgerState = loadLedgerState();
 
+    function loadQuoteCache() {
+      try {
+        const cache = JSON.parse(localStorage.getItem("assetDashboardQuoteCache") || "{}");
+        return cache && typeof cache === "object" ? cache : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveQuoteCache() {
+      const cache = {};
+      holdings.forEach(item => {
+        if (Number.isFinite(Number(item.live))) {
+          cache[item.symbol] = {
+            live: Number(item.live),
+            source: item.source || "Yahoo Finance",
+            savedAt: new Date().toISOString(),
+          };
+        }
+      });
+      localStorage.setItem("assetDashboardQuoteCache", JSON.stringify(cache));
+    }
+
+    function applyQuoteCache() {
+      const cache = loadQuoteCache();
+      holdings.forEach(item => {
+        const quote = cache[item.symbol];
+        const live = Number(quote?.live);
+        if (Number.isFinite(live) && live > 0) {
+          item.live = live;
+          item.source = quote.source || "股價快取";
+        }
+      });
+    }
+
     function syncHoldingsFromState() {
       holdings.splice(0, holdings.length, ...ledgerState.holdings.map(item => ({
         ...item,
         live: Number.isFinite(Number(item.live)) ? Number(item.live) : Number(item.close) || 0,
         source: item.source || "本機台帳",
       })));
+      applyQuoteCache();
     }
 
     function saveHoldingsToState() {
@@ -1878,8 +1914,6 @@
               item.source = "Yahoo Finance 批次報價";
               ok += 1;
             } else {
-              item.live = item.close;
-              item.source = "基準收盤價";
               failed += 1;
             }
           });
@@ -1891,12 +1925,12 @@
               item.source = "Yahoo Finance 即時/延遲";
               ok += 1;
             } catch (quoteErr) {
-              item.live = item.close;
-              item.source = "基準收盤價";
               failed += 1;
             }
           }));
         }
+        saveQuoteCache();
+        saveHoldingsToState();
         const rateResults = await refreshRatesOnly();
         rateResults.forEach(result => result.includes("TradingView") ? ok += 1 : failed += 1);
         status.textContent = `完成：${ok} 成功，${failed} 使用基準價`;
