@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import socket
 import ssl
+from urllib.parse import parse_qs, urlparse
 import urllib.request
 
 
@@ -35,6 +36,31 @@ def tradingview_price(market, tickers):
     raise ValueError(f"No TradingView price for {tickers}")
 
 
+def yahoo_price(symbol):
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=1d&interval=1m"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=10, context=SSL_CONTEXT) as response:
+        data = json.loads(response.read().decode("utf-8"))
+    result = data.get("chart", {}).get("result", [{}])[0]
+    meta = result.get("meta", {})
+    price = meta.get("regularMarketPrice", meta.get("previousClose"))
+    if not isinstance(price, (int, float)):
+        raise ValueError(f"No Yahoo Finance price for {symbol}")
+    return {
+        "symbol": symbol,
+        "price": float(price),
+        "source": "Yahoo Finance chart",
+        "exchangeName": meta.get("exchangeName", ""),
+        "marketState": meta.get("marketState", ""),
+        "regularMarketTime": meta.get("regularMarketTime"),
+    }
+
+
 class AssetHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -50,7 +76,8 @@ class AssetHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        if self.path.split("?", 1)[0] == "/api/rates":
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/rates":
             try:
                 usd_twd = tradingview_price("forex", "FX_IDC:USDTWD")
                 jpy_twd = tradingview_price("forex", "FX_IDC:JPYTWD")
@@ -65,6 +92,16 @@ class AssetHandler(SimpleHTTPRequestHandler):
                     "btcUsd": btc_usd,
                     "btcTwd": btc_usd * usd_twd,
                 })
+            except Exception as exc:
+                self._json(502, {"error": str(exc)})
+            return
+        if parsed.path == "/api/quote":
+            try:
+                symbol = parse_qs(parsed.query).get("symbol", [""])[0].strip()
+                if not symbol:
+                    self._json(400, {"error": "Missing symbol"})
+                    return
+                self._json(200, yahoo_price(symbol))
             except Exception as exc:
                 self._json(502, {"error": str(exc)})
             return

@@ -1698,13 +1698,13 @@
     }
 
     async function fetchYahooPrice(symbol) {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1m`;
+      const url = location.protocol === "file:"
+        ? `http://127.0.0.1:8765/api/quote?symbol=${encodeURIComponent(symbol)}`
+        : `/api/quote?symbol=${encodeURIComponent(symbol)}`;
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const result = data.chart?.result?.[0];
-      const meta = result?.meta;
-      const price = meta?.regularMarketPrice || meta?.previousClose;
+      const price = Number(data.price);
       if (!Number.isFinite(price)) throw new Error("No price");
       return price;
     }
