@@ -105,6 +105,26 @@ class AssetHandler(SimpleHTTPRequestHandler):
             except Exception as exc:
                 self._json(502, {"error": str(exc)})
             return
+        if parsed.path == "/api/quotes":
+            symbols = [
+                symbol.strip()
+                for symbol in parse_qs(parsed.query).get("symbols", [""])[0].split(",")
+                if symbol.strip()
+            ]
+            if not symbols:
+                self._json(400, {"error": "Missing symbols"})
+                return
+            results = []
+            for symbol in dict.fromkeys(symbols[:50]):
+                try:
+                    results.append(yahoo_price(symbol))
+                except Exception as exc:
+                    results.append({"symbol": symbol, "error": str(exc)})
+            self._json(200, {
+                "source": "Yahoo Finance chart",
+                "quotes": results,
+            })
+            return
         super().do_GET()
 
 

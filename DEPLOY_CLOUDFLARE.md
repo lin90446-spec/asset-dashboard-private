@@ -5,6 +5,7 @@
 - `asset-dashboard.html`：主頁面。
 - `functions/api/rates.js`：Cloudflare Pages Function，提供 `/api/rates` 即時匯率。
 - `functions/api/quote.js`：Cloudflare Pages Function，提供 `/api/quote?symbol=2330.TW` 股票報價代理。
+- `functions/api/quotes.js`：Cloudflare Pages Function，提供 `/api/quotes?symbols=0056.TW,2330.TW` 批次股票報價代理。
 - `asset_server.py`：只給 Mac 本機/區網測試用；部署到 Cloudflare Pages 時不會使用。
 
 ## 部署到 Cloudflare Pages
@@ -47,7 +48,7 @@
 ## 注意
 
 - Cloudflare 版本的 `/api/rates` 會由 `functions/api/rates.js` 提供，不需要 Mac 開機。
-- Cloudflare 版本的股票即時價會由 `functions/api/quote.js` 代理 Yahoo Finance，避免瀏覽器 CORS 擋住。
+- Cloudflare 版本的股票即時價會優先由 `functions/api/quotes.js` 批次代理 Yahoo Finance，避免瀏覽器 CORS 與多請求漏抓；單檔備援由 `functions/api/quote.js` 提供。
 - `functions/_middleware.js` 會保護所有線上路由。
 - 目前台帳仍存在各瀏覽器自己的 `localStorage`。
 - 若要 Mac 和手機同步台帳，下一步要把 localStorage 改成雲端資料庫，例如 Cloudflare D1 或 Supabase。

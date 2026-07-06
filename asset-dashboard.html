@@ -1733,6 +1733,27 @@
       return price;
     }
 
+    async function fetchYahooPrices(symbols) {
+      const uniqueSymbols = [...new Set(symbols)];
+      const url = location.protocol === "file:"
+        ? `http://127.0.0.1:8765/api/quotes?symbols=${encodeURIComponent(uniqueSymbols.join(","))}`
+        : `/api/quotes?symbols=${encodeURIComponent(uniqueSymbols.join(","))}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const quoteMap = new Map();
+      (data.quotes || []).forEach(quote => {
+        const price = Number(quote.price);
+        if (quote.symbol && Number.isFinite(price)) {
+          quoteMap.set(quote.symbol, {
+            price,
+            source: quote.source || "Yahoo Finance 批次報價",
+          });
+        }
+      });
+      return quoteMap;
+    }
+
     async function fetchLocalRates() {
       const rateApiUrl = location.protocol === "file:"
         ? "http://127.0.0.1:8765/api/rates"
@@ -1848,18 +1869,34 @@
       let ok = 0;
       let failed = 0;
       try {
-        await Promise.all(holdings.map(async item => {
-          try {
-            const price = await fetchYahooPrice(item.symbol);
-            item.live = price;
-            item.source = "Yahoo Finance 即時/延遲";
-            ok += 1;
-          } catch (err) {
-            item.live = item.close;
-            item.source = "基準收盤價";
-            failed += 1;
-          }
-        }));
+        try {
+          const quoteMap = await fetchYahooPrices(holdings.map(item => item.symbol));
+          holdings.forEach(item => {
+            const quote = quoteMap.get(item.symbol);
+            if (quote) {
+              item.live = quote.price;
+              item.source = "Yahoo Finance 批次報價";
+              ok += 1;
+            } else {
+              item.live = item.close;
+              item.source = "基準收盤價";
+              failed += 1;
+            }
+          });
+        } catch (err) {
+          await Promise.all(holdings.map(async item => {
+            try {
+              const price = await fetchYahooPrice(item.symbol);
+              item.live = price;
+              item.source = "Yahoo Finance 即時/延遲";
+              ok += 1;
+            } catch (quoteErr) {
+              item.live = item.close;
+              item.source = "基準收盤價";
+              failed += 1;
+            }
+          }));
+        }
         const rateResults = await refreshRatesOnly();
         rateResults.forEach(result => result.includes("TradingView") ? ok += 1 : failed += 1);
         status.textContent = `完成：${ok} 成功，${failed} 使用基準價`;
