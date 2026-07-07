@@ -592,7 +592,7 @@
     <header class="topbar">
       <div>
         <h1>Eric 資產儀表板</h1>
-        <p class="subtitle">基準時間：2026/07/06 16:13。股票與帳戶金額依最新截圖快照更新。</p>
+        <p class="subtitle">基準時間：2026/07/07 23:40。股票與帳戶金額依最新截圖快照更新。</p>
       </div>
       <div class="actions">
         <button class="btn primary" id="refreshQuotes">更新市價/匯率</button>
@@ -729,7 +729,7 @@
           <div class="controls">
             <div class="field">
               <label for="fundNav">統一全球新科技基金淨值</label>
-              <input id="fundNav" inputmode="decimal" value="134.29">
+              <input id="fundNav" inputmode="decimal" value="132.59">
             </div>
             <div class="field">
               <label for="fundUnits">總持有單位數</label>
@@ -841,9 +841,9 @@
     };
 
     const accountDefs = {
-      future_demand: { name: "將來銀行台幣活存", currency: "TWD", initial: 3801702 },
+      future_demand: { name: "將來銀行台幣活存", currency: "TWD", initial: 3801642 },
       future_td: { name: "將來銀行台幣定存", currency: "TWD", initial: 100000 },
-      line_main: { name: "LINE Bank 主帳戶", currency: "TWD", initial: 3050 },
+      line_main: { name: "LINE Bank 主帳戶", currency: "TWD", initial: 2826 },
       line_pocket: { name: "LINE Bank 口袋帳戶", currency: "TWD", initial: 250000 },
       line_td: { name: "LINE Bank 台幣定存", currency: "TWD", initial: 250000 },
       line_fubon_settle: { name: "富邦證券交割帳戶", currency: "TWD", initial: 0 },
@@ -854,17 +854,17 @@
       esun_twd: { name: "玉山台幣活期", currency: "TWD", initial: 105280 },
       sinopac_twd: { name: "永豐台幣活期", currency: "TWD", initial: 101061 },
       yuanta_twd: { name: "元大台幣活期", currency: "TWD", initial: 16891 },
-      yuanta_settle: { name: "元大證券交割戶", currency: "TWD", initial: 551 },
+      yuanta_settle: { name: "元大證券交割戶", currency: "TWD", initial: -271193 },
       yuanta_usd: { name: "元大美金活期", currency: "USD", initial: 65.39 },
       wallet_twd: { name: "錢包", currency: "TWD", initial: 7367 },
       cash_jpy: { name: "日圓現金", currency: "JPY", initial: 28400 },
       credit_lianbang: { name: "聯邦信用卡", currency: "TWD", initial: -520 },
-      credit_sinopac: { name: "永豐信用卡", currency: "TWD", initial: -2280 },
-      credit_esun: { name: "玉山信用卡", currency: "TWD", initial: -8015 },
+      credit_sinopac: { name: "永豐信用卡", currency: "TWD", initial: -2518 },
+      credit_esun: { name: "玉山信用卡", currency: "TWD", initial: -8070 },
       stored_cards: { name: "儲值卡合計", currency: "TWD", initial: 2896 },
       vouchers: { name: "禮券", currency: "TWD", initial: 1000 },
-      points: { name: "點數合計", currency: "TWD", initial: 1187.82 },
-      zbd_sats: { name: "比特幣 ZBD", currency: "SATS", initial: 44678 },
+      points: { name: "點數合計", currency: "TWD", initial: 1204.29 },
+      zbd_sats: { name: "比特幣 ZBD", currency: "SATS", initial: 44778 },
     };
 
     const interestRules = {
@@ -990,30 +990,30 @@
     ];
 
     const holdings = [
-      { bucket: "元大證券", type: "ETF", symbol: "0056.TW", code: "0056", name: "元大高股息", cost: 37.47, close: 53.25, qty: 9000 },
-      { bucket: "元大證券", type: "ETF", symbol: "00713.TW", code: "00713", name: "元大台灣高息低波", cost: 53.14, close: 61.00, qty: 2000 },
-      { bucket: "元大證券", type: "ETF", symbol: "00878.TW", code: "00878", name: "國泰永續高股息", cost: 23.70, close: 33.49, qty: 18000 },
+      { bucket: "元大證券", type: "ETF", symbol: "0056.TW", code: "0056", name: "元大高股息", cost: 37.47, close: 52.15, qty: 9000 },
+      { bucket: "元大證券", type: "ETF", symbol: "00713.TW", code: "00713", name: "元大台灣高息低波", cost: 53.14, close: 60.60, qty: 2000 },
+      { bucket: "元大證券", type: "ETF", symbol: "00878.TW", code: "00878", name: "國泰永續高股息", cost: 23.70, close: 32.97, qty: 18000 },
       { bucket: "元大證券", type: "ETF", symbol: "00924.TW", code: "00924", name: "復華 S&P500 成長", cost: 32.27, close: 32.58, qty: 10000 },
-      { bucket: "元大證券", type: "ETF", symbol: "00929.TW", code: "00929", name: "復華台灣科技優息", cost: 30.99, close: 31.36, qty: 12000 },
-      { bucket: "元大證券", type: "ETF", symbol: "00935.TW", code: "00935", name: "野村臺灣新科技50", cost: 56.28, close: 61.50, qty: 9000 },
-      { bucket: "元大證券", type: "ETF", symbol: "009816.TW", code: "009816", name: "凱基台灣TOP50", cost: 14.35, close: 15.65, qty: 42000 },
-      { bucket: "元大證券", type: "個股", symbol: "2308.TW", code: "2308", name: "台達電", cost: 1996.70, close: 1995.00, qty: 150 },
-      { bucket: "元大證券", type: "個股", symbol: "2317.TW", code: "2317", name: "鴻海", cost: 222.19, close: 242.00, qty: 3000 },
-      { bucket: "元大證券", type: "個股", symbol: "2330.TW", code: "2330", name: "台積電", cost: 1781.96, close: 2460.00, qty: 1700 },
-      { bucket: "元大證券", type: "個股", symbol: "2382.TW", code: "2382", name: "廣達", cost: 299.00, close: 378.00, qty: 2000 },
-      { bucket: "元大證券", type: "個股", symbol: "2441.TW", code: "2441", name: "超豐", cost: 138.12, close: 145.00, qty: 1000 },
-      { bucket: "元大證券", type: "個股", symbol: "2454.TW", code: "2454", name: "聯發科", cost: 4078.47, close: 4125.00, qty: 100 },
-      { bucket: "元大證券", type: "個股", symbol: "3042.TW", code: "3042", name: "晶技", cost: 221.79, close: 224.50, qty: 5000 },
-      { bucket: "元大證券", type: "個股", symbol: "6415.TW", code: "6415", name: "矽力*-KY", cost: 268.23, close: 620.00, qty: 1000 },
-      { bucket: "元大證券", type: "個股", symbol: "8086.TWO", code: "8086", name: "宏捷科", cost: 163.31, close: 144.50, qty: 6000 },
-      { bucket: "聯邦證券", type: "ETF", symbol: "009802.TW", code: "009802", name: "富邦旗艦50", cost: 14.86, close: 19.5295, qty: 1679 },
-      { bucket: "聯邦證券", type: "ETF", symbol: "009804.TW", code: "009804", name: "聯邦台精彩50", cost: 14.41, close: 24.27, qty: 6249 },
-      { bucket: "聯邦證券", type: "主動ETF", symbol: "00988A.TW", code: "00988A", name: "主動統一全球創新", cost: 18.09, close: 20.83, qty: 1536 },
+      { bucket: "元大證券", type: "ETF", symbol: "00929.TW", code: "00929", name: "復華台灣科技優息", cost: 30.99, close: 30.44, qty: 12000 },
+      { bucket: "元大證券", type: "ETF", symbol: "00935.TW", code: "00935", name: "野村臺灣新科技50", cost: 56.28, close: 58.85, qty: 9000 },
+      { bucket: "元大證券", type: "ETF", symbol: "009816.TW", code: "009816", name: "凱基台灣TOP50", cost: 14.35, close: 15.29, qty: 42000 },
+      { bucket: "元大證券", type: "個股", symbol: "2308.TW", code: "2308", name: "台達電", cost: 1996.70, close: 1890.00, qty: 150 },
+      { bucket: "元大證券", type: "個股", symbol: "2317.TW", code: "2317", name: "鴻海", cost: 222.19, close: 237.00, qty: 3000 },
+      { bucket: "元大證券", type: "個股", symbol: "2330.TW", code: "2330", name: "台積電", cost: 1781.96, close: 2440.00, qty: 1700 },
+      { bucket: "元大證券", type: "個股", symbol: "2382.TW", code: "2382", name: "廣達", cost: 299.00, close: 373.00, qty: 2000 },
+      { bucket: "元大證券", type: "個股", symbol: "2441.TW", code: "2441", name: "超豐", cost: 137.78, close: 133.50, qty: 3000 },
+      { bucket: "元大證券", type: "個股", symbol: "2454.TW", code: "2454", name: "聯發科", cost: 4078.47, close: 4030.00, qty: 100 },
+      { bucket: "元大證券", type: "個股", symbol: "3042.TW", code: "3042", name: "晶技", cost: 221.79, close: 210.00, qty: 5000 },
+      { bucket: "元大證券", type: "個股", symbol: "6415.TW", code: "6415", name: "矽力*-KY", cost: 268.23, close: 560.00, qty: 1000 },
+      { bucket: "元大證券", type: "個股", symbol: "8086.TWO", code: "8086", name: "宏捷科", cost: 163.31, close: 136.00, qty: 6000 },
+      { bucket: "聯邦證券", type: "ETF", symbol: "009802.TW", code: "009802", name: "富邦旗艦50", cost: 14.86, close: 18.9427, qty: 1679 },
+      { bucket: "聯邦證券", type: "ETF", symbol: "009804.TW", code: "009804", name: "聯邦台精彩50", cost: 14.41, close: 23.5408, qty: 6249 },
+      { bucket: "聯邦證券", type: "主動ETF", symbol: "00988A.TW", code: "00988A", name: "主動統一全球創新", cost: 18.09, close: 20.2042, qty: 1536 },
       { bucket: "美債", type: "短債ETF", symbol: "SHV", code: "SHV", name: "iShares Short Treasury Bond ETF", cost: 110.09, close: 110.09, qty: 56, currency: "USD" },
     ].map(item => ({ ...item, live: item.close, source: "基準收盤價" }));
 
     const staticBase = {
-      initialNetWorth: 18287285,
+      initialNetWorth: 17918900,
     };
 
     const fund = {
@@ -1573,7 +1573,7 @@
 
     const snapshotUpdates = [
       {
-        key: "2026-07-06-1613-asset-snapshot",
+        key: "2026-07-07-2342-yuanta-holdings",
         completedImportKeys: ["2026-07-05-1118-daily-flow"],
       },
     ];
@@ -1586,6 +1586,7 @@
           balances: initialBalances(),
           holdings: initialHoldings(),
         };
+        localStorage.removeItem("assetDashboardQuoteCache");
         saveLedgerState();
         syncHoldingsFromState();
         snapshot.completedImportKeys.forEach(key => {
