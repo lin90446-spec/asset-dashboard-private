@@ -94,6 +94,18 @@
       color: white;
     }
 
+    .btn.small {
+      padding: 6px 10px;
+      font-size: 13px;
+      box-shadow: none;
+    }
+
+    .btn.danger {
+      color: var(--red);
+      border-color: rgba(220, 65, 88, .35);
+      background: #fff7f8;
+    }
+
     .kpis {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -812,6 +824,7 @@
                   <th>帳戶/標的</th>
                   <th>金額</th>
                   <th>備註</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody id="entryBody"></tbody>
@@ -1692,7 +1705,8 @@
       holding.qty = Math.max(0, (Number(holding.qty) || 0) - shares);
     }
 
-    function applyEntry(entry) {
+    function applyEntry(entry, options = {}) {
+      const { persist = true } = options;
       const amount = Number(entry.amount) || 0;
       const fee = Number(entry.fee) || 0;
       const tax = Number(entry.tax) || 0;
@@ -1728,8 +1742,20 @@
         sellHolding(stockPayload);
       }
 
+      if (persist) {
+        saveHoldingsToState();
+        saveLedgerState();
+      }
+    }
+
+    function rebuildLedgerFromEntries(entries) {
+      ledgerState = {
+        balances: initialBalances(),
+        holdings: initialHoldings(),
+      };
+      syncHoldingsFromState();
+      entries.forEach(entry => applyEntry(entry, { persist: false }));
       saveHoldingsToState();
-      saveLedgerState();
     }
 
     function entryAccountText(entry) {
@@ -1746,7 +1772,7 @@
       const summary = document.querySelector("#entrySummary");
       summary.textContent = `${entries.length} 筆`;
       if (!entries.length) {
-        body.innerHTML = `<tr><td colspan="5"><div class="empty">尚無異動紀錄</div></td></tr>`;
+        body.innerHTML = `<tr><td colspan="6"><div class="empty">尚無異動紀錄</div></td></tr>`;
         return;
       }
       body.innerHTML = entries.slice().reverse().map(entry => {
@@ -1764,6 +1790,7 @@
             <td>${entryAccountText(entry)}</td>
             <td class="${amountClass}">${amountPrefix}${twd(Math.abs(entry.amount || 0))}</td>
             <td class="name-cell">${[entry.note || "-", extra].filter(Boolean).join("<br>")}</td>
+            <td><button class="btn small danger" type="button" data-delete-entry="${entry.id}">刪除</button></td>
           </tr>
         `;
       }).join("");
@@ -2047,9 +2074,19 @@
       document.querySelector("#entryNote").value = "";
       renderAll();
     });
+    document.querySelector("#entryBody").addEventListener("click", event => {
+      const button = event.target.closest("[data-delete-entry]");
+      if (!button) return;
+      const id = String(button.dataset.deleteEntry);
+      const entries = loadEntries().filter(entry => String(entry.id) !== id);
+      saveEntries(entries);
+      rebuildLedgerFromEntries(entries);
+      renderAll();
+    });
     document.querySelector("#clearEntries").addEventListener("click", () => {
       saveEntries([]);
-      renderEntries();
+      rebuildLedgerFromEntries([]);
+      renderAll();
     });
     document.querySelector("#resetLedger").addEventListener("click", () => {
       localStorage.removeItem(stateKey);
