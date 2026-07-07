@@ -592,7 +592,7 @@
     <header class="topbar">
       <div>
         <h1>Eric 資產儀表板</h1>
-        <p class="subtitle">基準時間：2026/07/07 23:40。股票與帳戶金額依最新截圖快照更新。</p>
+        <p class="subtitle">基準時間：2026/07/07 23:42。股票與帳戶金額依最新截圖快照更新。</p>
       </div>
       <div class="actions">
         <button class="btn primary" id="refreshQuotes">更新市價/匯率</button>
@@ -989,7 +989,7 @@
       { group: "加密貨幣", id: "zbd_sats", note: "1 BTC = 100,000,000 sats" },
     ];
 
-    const holdings = [
+    const holdingsBaseline = [
       { bucket: "元大證券", type: "ETF", symbol: "0056.TW", code: "0056", name: "元大高股息", cost: 37.47, close: 52.15, qty: 9000 },
       { bucket: "元大證券", type: "ETF", symbol: "00713.TW", code: "00713", name: "元大台灣高息低波", cost: 53.14, close: 60.60, qty: 2000 },
       { bucket: "元大證券", type: "ETF", symbol: "00878.TW", code: "00878", name: "國泰永續高股息", cost: 23.70, close: 32.97, qty: 18000 },
@@ -1011,6 +1011,8 @@
       { bucket: "聯邦證券", type: "主動ETF", symbol: "00988A.TW", code: "00988A", name: "主動統一全球創新", cost: 18.09, close: 20.2042, qty: 1536 },
       { bucket: "美債", type: "短債ETF", symbol: "SHV", code: "SHV", name: "iShares Short Treasury Bond ETF", cost: 110.09, close: 110.09, qty: 56, currency: "USD" },
     ].map(item => ({ ...item, live: item.close, source: "基準收盤價" }));
+
+    let holdings = holdingsBaseline.map(item => ({ ...item }));
 
     const staticBase = {
       initialNetWorth: 17918900,
@@ -1037,7 +1039,7 @@
     }
 
     function initialHoldings() {
-      return holdings.map(item => ({
+      return holdingsBaseline.map(item => ({
         code: item.code,
         bucket: item.bucket,
         type: item.type,
@@ -1581,7 +1583,7 @@
     function applySnapshotUpdatesOnce() {
       snapshotUpdates.forEach(snapshot => {
         const flag = `assetDashboardSnapshot:${snapshot.key}`;
-        if (localStorage.getItem(flag)) return;
+        if (localStorage.getItem(flag) && holdingsMatchLatestBaseline()) return;
         ledgerState = {
           balances: initialBalances(),
           holdings: initialHoldings(),
@@ -1594,6 +1596,15 @@
         });
         localStorage.setItem(flag, "1");
       });
+    }
+
+    function holdingsMatchLatestBaseline() {
+      const baseline = initialHoldings().find(item => item.code === "2441");
+      const saved = ledgerState.holdings.find(item => item.code === "2441");
+      if (!baseline || !saved) return false;
+      return Number(saved.qty) === Number(baseline.qty)
+        && Number(saved.cost) === Number(baseline.cost)
+        && Number(saved.close) === Number(baseline.close);
     }
 
     function applyImportBatchesOnce() {
@@ -2042,6 +2053,8 @@
     });
     document.querySelector("#resetLedger").addEventListener("click", () => {
       localStorage.removeItem(stateKey);
+      localStorage.removeItem("assetDashboardQuoteCache");
+      snapshotUpdates.forEach(snapshot => localStorage.removeItem(`assetDashboardSnapshot:${snapshot.key}`));
       saveEntries([]);
       ledgerState = loadLedgerState();
       syncHoldingsFromState();
