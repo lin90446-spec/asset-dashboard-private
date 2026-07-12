@@ -155,11 +155,10 @@
     }
 
     .layout {
-      display: grid;
-      grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
-      gap: 18px;
-      align-items: start;
+      display: block;
     }
+
+    .layout > div + div { margin-top: 18px; }
 
     .panel {
       background: var(--panel);
@@ -176,6 +175,32 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+    }
+
+    summary.panel-header {
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+    }
+
+    summary.panel-header::-webkit-details-marker { display: none; }
+
+    summary.panel-header::after {
+      content: "›";
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 24px;
+      line-height: 1;
+      transform: rotate(90deg);
+      transition: transform 160ms ease;
+    }
+
+    details.panel:not([open]) > summary.panel-header {
+      border-bottom: 0;
+    }
+
+    details.panel:not([open]) > summary.panel-header::after {
+      transform: rotate(0deg);
     }
 
     .panel-title {
@@ -287,7 +312,7 @@
 
     .account-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1fr;
       gap: 12px;
       padding: 14px;
     }
@@ -342,6 +367,27 @@
       margin-bottom: 8px;
     }
 
+    summary.account-head {
+      cursor: pointer;
+      list-style: none;
+      margin-bottom: 0;
+      align-items: center;
+    }
+
+    summary.account-head::-webkit-details-marker { display: none; }
+
+    summary.account-head::after {
+      content: "›";
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1;
+      transition: transform 160ms ease;
+    }
+
+    details.account[open] > summary.account-head::after {
+      transform: rotate(90deg);
+    }
+
     .account-name {
       font-weight: 800;
       overflow-wrap: anywhere;
@@ -350,6 +396,15 @@
     .account-amount {
       font-weight: 800;
       white-space: nowrap;
+    }
+
+    summary.account-head .account-amount {
+      margin-left: auto;
+      text-align: right;
+    }
+
+    summary.account-head::after {
+      margin-left: 4px;
     }
 
     .account-note {
@@ -374,27 +429,40 @@
       align-items: flex-start;
     }
 
-    .detail-row span:first-child {
+    .detail-row > span:first-child {
       overflow-wrap: anywhere;
+      color: var(--ink);
+      font-weight: 750;
     }
 
-    .detail-row span:last-child {
+    .detail-row > span:last-child {
       color: var(--ink);
       font-weight: 750;
       white-space: nowrap;
       text-align: right;
     }
 
-    .detail-row span.loss:last-child {
+    .detail-row > span.gain:last-child {
+      color: var(--green);
+    }
+
+    .detail-row > span.loss:last-child {
       color: var(--red);
     }
 
-    .detail-meta,
-    .detail-interest {
+    .detail-meta {
       display: block;
       margin-top: 2px;
       color: var(--muted);
-      font-weight: 650;
+      font-weight: 400;
+      white-space: normal;
+    }
+
+    .detail-interest {
+      display: block;
+      margin-top: 2px;
+      color: var(--ink);
+      font-weight: 400;
       white-space: normal;
     }
 
@@ -582,7 +650,6 @@
     }
 
     @media (max-width: 1040px) {
-      .layout { grid-template-columns: 1fr; }
       .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -604,11 +671,10 @@
     <header class="topbar">
       <div>
         <h1>Eric 資產儀表板</h1>
-        <p class="subtitle">基準時間：2026/07/07 23:42。股票與帳戶金額依最新截圖快照更新。</p>
+        <p class="subtitle">基準時間：2026/07/12 20:29。帳戶與持股依最新截圖快照更新。</p>
       </div>
       <div class="actions">
         <button class="btn primary" id="refreshQuotes">更新市價/匯率</button>
-        <button class="btn" id="resetQuotes">回到 07/03 收盤價</button>
         <a class="btn" href="https://tw.tradingview.com/symbols/USDTWD/?exchange=FX_IDC" target="_blank" rel="noreferrer">美元匯率</a>
         <a class="btn" href="https://tw.tradingview.com/symbols/JPYTWD/?exchange=FX_IDC" target="_blank" rel="noreferrer">日圓匯率</a>
         <a class="btn" href="https://tw.tradingview.com/symbols/BTCUSD/" target="_blank" rel="noreferrer">BTC/USD</a>
@@ -641,39 +707,36 @@
 
     <section class="layout">
       <div>
-        <section class="panel">
-          <div class="panel-header">
+        <details class="panel" open>
+          <summary class="panel-header">
             <h2 class="panel-title">大類配置</h2>
             <div class="status" id="quoteStatus">尚未更新</div>
-          </div>
+          </summary>
           <div class="allocation-chart" id="allocationChart"></div>
           <div class="note">大類總額由本機台帳、持股與即時匯率重算；股票明細採持有股數、成本均價與即時價格計算。</div>
-        </section>
+        </details>
 
-        <section class="panel section">
-          <div class="panel-header">
-            <h2 class="panel-title">現金與銀行帳戶</h2>
-            <span class="pill" id="cashTotal">--</span>
-          </div>
+        <details class="panel section" open>
+          <summary class="panel-header">
+            <h2 class="panel-title">銀行帳戶</h2>
+          </summary>
           <div class="summary-strip" id="bankInterestSummary"></div>
           <div class="account-grid" id="bankAccounts"></div>
-        </section>
+        </details>
 
-        <section class="panel section">
-          <div class="panel-header">
-            <h2 class="panel-title">信用卡、儲值、禮券、加密貨幣</h2>
-            <span class="pill">低占比項目</span>
-          </div>
+        <details class="panel section">
+          <summary class="panel-header">
+            <h2 class="panel-title">現金、信用卡、儲值、禮券、加密貨幣</h2>
+          </summary>
           <div class="account-grid" id="otherAccounts"></div>
-        </section>
+        </details>
       </div>
 
       <div>
-        <section class="panel">
-          <div class="panel-header">
+        <details class="panel" open>
+          <summary class="panel-header">
             <h2 class="panel-title">股票、ETF 與美債</h2>
-            <div class="status" id="holdingSummary">--</div>
-          </div>
+          </summary>
           <div class="summary-strip" id="holdingTotals"></div>
           <div class="tabs" id="tabs"></div>
           <div class="table-wrap">
@@ -713,13 +776,12 @@
           <div class="note" id="rateStatus">匯率來源：尚未更新，暫用欄位中的手動值。</div>
           <div class="note" id="autoUpdateStatus">自動更新：匯率每分鐘更新；股票交易時段內每分鐘更新。</div>
           <div class="note">即時報價：台股與 SHV 會嘗試抓取 Yahoo Finance chart 資料；USD/TWD、JPY/TWD、BTC/USD 會嘗試抓取 TradingView。BTC/TWD 以 BTC/USD × USD/TWD 換算；若失敗，會保留欄位中的手動值。</div>
-        </section>
+        </details>
 
-        <section class="panel section">
-          <div class="panel-header">
+        <details class="panel section">
+          <summary class="panel-header">
             <h2 class="panel-title">基金</h2>
-            <div class="status" id="fundSummary">--</div>
-          </div>
+          </summary>
           <div class="table-wrap">
             <table>
               <thead>
@@ -741,7 +803,7 @@
           <div class="controls">
             <div class="field">
               <label for="fundNav">統一全球新科技基金淨值</label>
-              <input id="fundNav" inputmode="decimal" value="132.59">
+              <input id="fundNav" inputmode="decimal" value="124.33994">
             </div>
             <div class="field">
               <label for="fundUnits">總持有單位數</label>
@@ -753,13 +815,13 @@
             </div>
           </div>
           <div class="note">統一全球新科技基金資料來源：你提供的持有成本與單位數；淨值可手動填入，或用上方「開啟基金淨值頁」查詢 MoneyDJ/將來銀行頁面後更新。</div>
-        </section>
+        </details>
 
-        <section class="panel section">
-          <div class="panel-header">
+        <details class="panel section">
+          <summary class="panel-header">
             <h2 class="panel-title">異動紀錄</h2>
             <div class="status" id="entrySummary">--</div>
-          </div>
+          </summary>
           <form class="entry-form" id="entryForm">
             <div class="field">
               <label for="entryType">類型</label>
@@ -831,7 +893,7 @@
             </table>
           </div>
           <div class="note">異動會直接更新本機台帳的帳戶餘額與持股，資料儲存在此瀏覽器 localStorage。</div>
-        </section>
+        </details>
       </div>
     </section>
   </main>
@@ -854,30 +916,30 @@
     };
 
     const accountDefs = {
-      future_demand: { name: "將來銀行台幣活存", currency: "TWD", initial: 3801642 },
+      future_demand: { name: "將來銀行台幣活存", currency: "TWD", initial: 3421642 },
       future_td: { name: "將來銀行台幣定存", currency: "TWD", initial: 100000 },
-      line_main: { name: "LINE Bank 主帳戶", currency: "TWD", initial: 2826 },
+      line_main: { name: "LINE Bank 主帳戶", currency: "TWD", initial: 3015 },
       line_pocket: { name: "LINE Bank 口袋帳戶", currency: "TWD", initial: 250000 },
       line_td: { name: "LINE Bank 台幣定存", currency: "TWD", initial: 250000 },
       line_fubon_settle: { name: "富邦證券交割帳戶", currency: "TWD", initial: 0 },
-      federal_twd: { name: "聯邦台幣活期", currency: "TWD", initial: 300042 },
+      federal_twd: { name: "聯邦台幣活期", currency: "TWD", initial: 300090 },
       federal_usd: { name: "聯邦美金活期", currency: "USD", initial: 0.14 },
       post_demand: { name: "中華郵政活存", currency: "TWD", initial: 8356 },
       post_td: { name: "中華郵政定存", currency: "TWD", initial: 100000 },
-      esun_twd: { name: "玉山台幣活期", currency: "TWD", initial: 105280 },
-      sinopac_twd: { name: "永豐台幣活期", currency: "TWD", initial: 101061 },
-      yuanta_twd: { name: "元大台幣活期", currency: "TWD", initial: 16891 },
-      yuanta_settle: { name: "元大證券交割戶", currency: "TWD", initial: -271193 },
+      esun_twd: { name: "玉山台幣活期", currency: "TWD", initial: 100280 },
+      sinopac_twd: { name: "永豐台幣活期", currency: "TWD", initial: 201061 },
+      yuanta_twd: { name: "元大台幣活期", currency: "TWD", initial: 16654 },
+      yuanta_settle: { name: "元大證券交割戶", currency: "TWD", initial: 221486 },
       yuanta_usd: { name: "元大美金活期", currency: "USD", initial: 65.39 },
       wallet_twd: { name: "錢包", currency: "TWD", initial: 7367 },
       cash_jpy: { name: "日圓現金", currency: "JPY", initial: 28400 },
-      credit_lianbang: { name: "聯邦信用卡", currency: "TWD", initial: -520 },
+      credit_lianbang: { name: "聯邦信用卡", currency: "TWD", initial: -796 },
       credit_sinopac: { name: "永豐信用卡", currency: "TWD", initial: -2518 },
-      credit_esun: { name: "玉山信用卡", currency: "TWD", initial: -8070 },
+      credit_esun: { name: "玉山信用卡", currency: "TWD", initial: -7766 },
       stored_cards: { name: "儲值卡合計", currency: "TWD", initial: 2896 },
       vouchers: { name: "禮券", currency: "TWD", initial: 1000 },
-      points: { name: "點數合計", currency: "TWD", initial: 1204.29 },
-      zbd_sats: { name: "比特幣 ZBD", currency: "SATS", initial: 44778 },
+      points: { name: "點數合計", currency: "TWD", initial: 1249.77 },
+      zbd_sats: { name: "比特幣 ZBD", currency: "SATS", initial: 45961 },
     };
 
     const interestRules = {
@@ -892,9 +954,9 @@
       future_td: { label: "三個月定存 2.2%", annual: amount => amount * 0.022 },
       line_main: { label: "活儲 0.755%", annual: amount => amount * 0.00755 },
       line_pocket: {
-        label: "10萬內 1.5%；超出 0.755%",
+        label: "900萬元內 1.5%",
         annual: amount => tierInterest(amount, [
-          [100000, 0.015],
+          [9000000, 0.015],
           [Infinity, 0.00755],
         ]),
       },
@@ -927,7 +989,6 @@
       {
         name: "將來銀行",
         amount: 3901702,
-        note: "主戰略現金水庫",
         details: [
           ["台幣活存", "future_demand"],
           ["台幣定存", "future_td"],
@@ -936,7 +997,6 @@
       {
         name: "LINE Bank",
         amount: 503081,
-        note: "次級高利水庫",
         details: [
           ["主帳戶", "line_main"],
           ["口袋帳戶", "line_pocket"],
@@ -947,7 +1007,6 @@
       {
         name: "聯邦銀行",
         amount: 300046,
-        note: "高利防禦帳戶",
         details: [
           ["台幣活期 New New Bank", "federal_twd"],
           ["美金活期", "federal_usd"],
@@ -956,7 +1015,6 @@
       {
         name: "中華郵政",
         amount: 108356,
-        note: "郵局活存與定存",
         details: [
           ["活存", "post_demand"],
           ["定存", "post_td"],
@@ -965,7 +1023,6 @@
       {
         name: "玉山銀行",
         amount: 105280,
-        note: "薪資與日常流動池",
         details: [
           ["台幣活期", "esun_twd"],
         ],
@@ -973,7 +1030,6 @@
       {
         name: "永豐銀行",
         amount: 101061,
-        note: "大戶數位帳戶",
         details: [
           ["台幣活期", "sinopac_twd"],
         ],
@@ -981,7 +1037,6 @@
       {
         name: "元大銀行",
         amount: 21452,
-        note: "交割與外幣帳戶",
         details: [
           ["台幣活期", "yuanta_twd"],
           ["證券交割戶", "yuanta_settle"],
@@ -1003,32 +1058,32 @@
     ];
 
     const holdingsBaseline = [
-      { bucket: "元大證券", type: "ETF", symbol: "0056.TW", code: "0056", name: "元大高股息", cost: 37.47, close: 52.15, qty: 9000 },
-      { bucket: "元大證券", type: "ETF", symbol: "00713.TW", code: "00713", name: "元大台灣高息低波", cost: 53.14, close: 60.60, qty: 2000 },
-      { bucket: "元大證券", type: "ETF", symbol: "00878.TW", code: "00878", name: "國泰永續高股息", cost: 23.70, close: 32.97, qty: 18000 },
-      { bucket: "元大證券", type: "ETF", symbol: "00924.TW", code: "00924", name: "復華 S&P500 成長", cost: 32.27, close: 32.58, qty: 10000 },
-      { bucket: "元大證券", type: "ETF", symbol: "00929.TW", code: "00929", name: "復華台灣科技優息", cost: 30.99, close: 30.44, qty: 12000 },
-      { bucket: "元大證券", type: "ETF", symbol: "00935.TW", code: "00935", name: "野村臺灣新科技50", cost: 56.28, close: 58.85, qty: 9000 },
-      { bucket: "元大證券", type: "ETF", symbol: "009816.TW", code: "009816", name: "凱基台灣TOP50", cost: 14.35, close: 15.29, qty: 42000 },
-      { bucket: "元大證券", type: "個股", symbol: "2308.TW", code: "2308", name: "台達電", cost: 1996.70, close: 1890.00, qty: 150 },
-      { bucket: "元大證券", type: "個股", symbol: "2317.TW", code: "2317", name: "鴻海", cost: 222.19, close: 237.00, qty: 3000 },
-      { bucket: "元大證券", type: "個股", symbol: "2330.TW", code: "2330", name: "台積電", cost: 1781.96, close: 2440.00, qty: 1700 },
-      { bucket: "元大證券", type: "個股", symbol: "2382.TW", code: "2382", name: "廣達", cost: 299.00, close: 373.00, qty: 2000 },
-      { bucket: "元大證券", type: "個股", symbol: "2441.TW", code: "2441", name: "超豐", cost: 137.78, close: 133.50, qty: 3000 },
-      { bucket: "元大證券", type: "個股", symbol: "2454.TW", code: "2454", name: "聯發科", cost: 4078.47, close: 4030.00, qty: 100 },
-      { bucket: "元大證券", type: "個股", symbol: "3042.TW", code: "3042", name: "晶技", cost: 221.79, close: 210.00, qty: 5000 },
-      { bucket: "元大證券", type: "個股", symbol: "6415.TW", code: "6415", name: "矽力*-KY", cost: 268.23, close: 560.00, qty: 1000 },
+      { bucket: "元大證券", type: "ETF", symbol: "0056.TW", code: "0056", name: "元大高股息", cost: 37.47, close: 52.65, qty: 9000 },
+      { bucket: "元大證券", type: "ETF", symbol: "00713.TW", code: "00713", name: "元大台灣高息低波", cost: 53.14, close: 60.55, qty: 2000 },
+      { bucket: "元大證券", type: "ETF", symbol: "00878.TW", code: "00878", name: "國泰永續高股息", cost: 23.70, close: 33.19, qty: 18000 },
+      { bucket: "元大證券", type: "ETF", symbol: "00924.TW", code: "00924", name: "復華 S&P500 成長", cost: 32.17, close: 32.63, qty: 5000 },
+      { bucket: "元大證券", type: "ETF", symbol: "00929.TW", code: "00929", name: "復華台灣科技優息", cost: 30.99, close: 30.19, qty: 12000 },
+      { bucket: "元大證券", type: "ETF", symbol: "00935.TW", code: "00935", name: "野村臺灣新科技50", cost: 55.34, close: 58.95, qty: 5000 },
+      { bucket: "元大證券", type: "ETF", symbol: "009816.TW", code: "009816", name: "凱基台灣TOP50", cost: 14.38, close: 15.23, qty: 40000 },
+      { bucket: "元大證券", type: "個股", symbol: "2308.TW", code: "2308", name: "台達電", cost: 1996.70, close: 1880.00, qty: 150 },
+      { bucket: "元大證券", type: "個股", symbol: "2317.TW", code: "2317", name: "鴻海", cost: 222.19, close: 237.50, qty: 3000 },
+      { bucket: "元大證券", type: "個股", symbol: "2330.TW", code: "2330", name: "台積電", cost: 1818.08, close: 2415.00, qty: 1800 },
+      { bucket: "元大證券", type: "個股", symbol: "2382.TW", code: "2382", name: "廣達", cost: 299.00, close: 373.50, qty: 2000 },
+      { bucket: "元大證券", type: "個股", symbol: "2441.TW", code: "2441", name: "超豐", cost: 137.78, close: 144.50, qty: 3000 },
+      { bucket: "元大證券", type: "個股", symbol: "2454.TW", code: "2454", name: "聯發科", cost: 4078.47, close: 3925.00, qty: 100 },
+      { bucket: "元大證券", type: "個股", symbol: "3042.TW", code: "3042", name: "晶技", cost: 221.79, close: 200.00, qty: 5000 },
+      { bucket: "元大證券", type: "個股", symbol: "6415.TW", code: "6415", name: "矽力*-KY", cost: 268.23, close: 523.00, qty: 1000 },
       { bucket: "元大證券", type: "個股", symbol: "8086.TWO", code: "8086", name: "宏捷科", cost: 163.31, close: 136.00, qty: 6000 },
-      { bucket: "聯邦證券", type: "ETF", symbol: "009802.TW", code: "009802", name: "富邦旗艦50", cost: 14.86, close: 18.9427, qty: 1679 },
-      { bucket: "聯邦證券", type: "ETF", symbol: "009804.TW", code: "009804", name: "聯邦台精彩50", cost: 14.41, close: 23.5408, qty: 6249 },
-      { bucket: "聯邦證券", type: "主動ETF", symbol: "00988A.TW", code: "00988A", name: "主動統一全球創新", cost: 18.09, close: 20.2042, qty: 1536 },
+      { bucket: "聯邦證券", type: "ETF", symbol: "009802.TW", code: "009802", name: "富邦旗艦50", cost: 14.8594, close: 18.9792, qty: 1679 },
+      { bucket: "聯邦證券", type: "ETF", symbol: "009804.TW", code: "009804", name: "聯邦台精彩50", cost: 14.7224, close: 23.6000, qty: 6455 },
+      { bucket: "聯邦證券", type: "主動ETF", symbol: "00988A.TW", code: "00988A", name: "主動統一全球創新", cost: 18.0846, close: 19.1699, qty: 1536 },
       { bucket: "美債", type: "短債ETF", symbol: "SHV", code: "SHV", name: "iShares Short Treasury Bond ETF", cost: 110.09, close: 110.09, qty: 56, currency: "USD" },
-    ].map(item => ({ ...item, live: item.close, source: "基準收盤價" }));
+    ].map(item => ({ ...item, live: item.close, source: item.code === "SHV" ? "基準收盤價" : "2026/07/12 券商快照" }));
 
     let holdings = holdingsBaseline.map(item => ({ ...item }));
 
     const staticBase = {
-      initialNetWorth: 17918900,
+      initialNetWorth: 17806300,
     };
 
     const fund = {
@@ -1328,7 +1383,6 @@
       netDelta.classList.toggle("gain", delta >= 0);
       netDelta.classList.toggle("loss", delta < 0);
       document.querySelector("#riskRatio").textContent = pct(stockFundRiskValue() / t.net * 100);
-      document.querySelector("#cashTotal").textContent = twd(bankValue() + getCashValue());
     }
 
     function categoryGroups() {
@@ -1388,12 +1442,11 @@
       document.querySelector("#bankAccounts").innerHTML = bankAccounts.map(a => {
         const accountTotal = a.details.reduce((sum, [, id]) => sum + accountValueTwd(id), 0);
         return `
-        <article class="account">
-          <div class="account-head">
+        <details class="account">
+          <summary class="account-head">
             <div class="account-name">${a.name}</div>
-            <div class="account-amount ${accountTotal < 0 ? "loss" : ""}">${accountTotal < 0 ? "-" : ""}${twd(Math.abs(accountTotal))}</div>
-          </div>
-          <div class="account-note">${a.note}</div>
+            <div class="account-amount ${accountTotal > 0 ? "gain" : accountTotal < 0 ? "loss" : ""}">${accountTotal < 0 ? "-" : ""}${twd(Math.abs(accountTotal))}</div>
+          </summary>
           <div class="account-details">
             ${a.details.map(([label, id]) => {
               const value = accountValueTwd(id);
@@ -1404,11 +1457,11 @@
               return `
               <div class="detail-row">
                 <span>${label}${ruleText}</span>
-                <span class="${value < 0 ? "loss" : ""}">${formatAccountValue(id, true)}${interestText}</span>
+                <span class="${value > 0 ? "gain" : value < 0 ? "loss" : ""}">${formatAccountValue(id, true)}${interestText}</span>
               </div>
             `}).join("")}
           </div>
-        </article>
+        </details>
       `}).join("");
 
       document.querySelector("#otherAccounts").innerHTML = otherAccounts.map(a => {
@@ -1423,7 +1476,7 @@
               <div class="account-name">${def.name}</div>
               <div class="account-note">${a.group}</div>
             </div>
-            <div class="account-amount ${converted < 0 ? "loss" : ""}">${amountText}</div>
+            <div class="account-amount ${converted > 0 ? "gain" : converted < 0 ? "loss" : ""}">${amountText}</div>
           </div>
           <div class="account-note">${a.note}</div>
         </article>
@@ -1483,7 +1536,6 @@
           </tr>
         `;
       }).join("");
-      document.querySelector("#holdingSummary").textContent = `${twd(totalValue)} · 不含基金`;
     }
 
     function renderFund() {
@@ -1511,7 +1563,6 @@
           <td class="${returnPct >= 0 ? "gain" : "loss"}">${returnPct >= 0 ? "+" : ""}${returnPct.toFixed(2)}%</td>
         </tr>
       `;
-      document.querySelector("#fundSummary").textContent = `${twd(value)} · 占淨資產 ${pct(value / t.net * 100)}`;
     }
 
     function loadEntries() {
@@ -1588,7 +1639,7 @@
 
     const snapshotUpdates = [
       {
-        key: "2026-07-07-2342-yuanta-holdings",
+        key: "2026-07-12-2029-holdings-snapshot",
         completedImportKeys: ["2026-07-05-1118-daily-flow"],
       },
     ];
@@ -2011,15 +2062,6 @@
       document.querySelector("#autoUpdateStatus").textContent = `自動更新：${marketStatusText()}；匯率每分鐘更新，股票交易時段每分鐘更新。最後檢查 ${stamp}`;
     }
 
-    function resetQuotes() {
-      holdings.forEach(item => {
-        item.live = item.close;
-        item.source = "基準收盤價";
-      });
-      document.querySelector("#quoteStatus").textContent = "已回到 07/03 收盤價";
-      renderAll();
-    }
-
     function renderAll() {
       renderKpis();
       renderCategories();
@@ -2031,7 +2073,6 @@
     }
 
     document.querySelector("#refreshQuotes").addEventListener("click", refreshQuotes);
-    document.querySelector("#resetQuotes").addEventListener("click", resetQuotes);
     document.querySelectorAll("#twdUsd, #jpyTwd, #btcTwd, #fundNav, #fundUnits, #fundCost").forEach(input => {
       input.addEventListener("input", renderAll);
     });
