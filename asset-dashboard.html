@@ -1526,7 +1526,7 @@
         return `
           <tr>
             <td><span class="symbol">${item.code}</span></td>
-            <td class="name-cell">${item.name}<br><span class="muted">${item.bucket} · ${item.source}</span></td>
+            <td class="name-cell">${item.name}<br><span class="muted">${item.bucket}</span></td>
             <td>${qtyText(item)}</td>
             <td>${item.currency === "USD" ? "US$" : ""}${fmt2.format(item.cost)}</td>
             <td>${liveDisplay}</td>
