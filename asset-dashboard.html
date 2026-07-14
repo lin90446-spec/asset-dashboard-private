@@ -2035,7 +2035,7 @@
     function applySnapshotUpdatesOnce() {
       snapshotUpdates.forEach(snapshot => {
         const flag = `assetDashboardSnapshot:${snapshot.key}`;
-        if (localStorage.getItem(flag) && holdingsMatchLatestBaseline()) return;
+        if (localStorage.getItem(flag)) return;
         ledgerState = {
           balances: initialBalances(),
           holdings: initialHoldings(),
@@ -2048,15 +2048,6 @@
         });
         localStorage.setItem(flag, "1");
       });
-    }
-
-    function holdingsMatchLatestBaseline() {
-      const baseline = initialHoldings().find(item => item.code === "2441");
-      const saved = ledgerState.holdings.find(item => item.code === "2441");
-      if (!baseline || !saved) return false;
-      return Number(saved.qty) === Number(baseline.qty)
-        && Number(saved.cost) === Number(baseline.cost)
-        && Number(saved.close) === Number(baseline.close);
     }
 
     function applyImportBatchesOnce() {
@@ -2095,6 +2086,13 @@
       });
       if (changed) saveEntries(entries);
       localStorage.setItem(migrationKey, "1");
+    }
+
+    function repairJuly14LedgerOnce() {
+      const repairKey = "assetDashboardRepair:2026-07-14-rebuild-holdings";
+      if (localStorage.getItem(repairKey)) return;
+      rebuildLedgerFromEntries(loadEntries());
+      localStorage.setItem(repairKey, "1");
     }
 
     function accountLabel(id) {
@@ -2552,6 +2550,7 @@
     applySnapshotUpdatesOnce();
     applyImportBatchesOnce();
     correctJuly13TradeDatesOnce();
+    repairJuly14LedgerOnce();
     renderAll();
     refreshRatesOnly();
     setInterval(autoRefreshTick, 60000);
