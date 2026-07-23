@@ -1984,6 +1984,7 @@
             shares: 1000,
             fee: 403,
             tax: 0,
+            dayTrade: true,
             note: "現沖買 1,000 股，成交價 472.00，實付 472,403",
           },
           {
@@ -1996,6 +1997,7 @@
             shares: 1000,
             fee: 409,
             tax: 721,
+            dayTrade: true,
             note: "現沖賣 1,000 股，成交價 480.50，實收 479,370",
           },
           {
@@ -2424,7 +2426,7 @@
             date: "2026-07-16",
             amount: 224500,
             account: "yuanta_settle",
-            stock: "3443",
+            stock: "3017",
             shares: 100,
             fee: 191,
             tax: 0,
@@ -2520,7 +2522,7 @@
             date: "2026-07-20",
             amount: 410000,
             account: "yuanta_settle",
-            stock: "3443",
+            stock: "3017",
             shares: 200,
             fee: 350,
             tax: 0,
@@ -2532,7 +2534,7 @@
             date: "2026-07-20",
             amount: 208500,
             account: "yuanta_settle",
-            stock: "3443",
+            stock: "3017",
             shares: 100,
             fee: 178,
             tax: 0,
@@ -2783,6 +2785,21 @@
       localStorage.setItem(repairKey, "1");
     }
 
+    function repairStockCodesAndDayTradesOnce() {
+      const repairKey = "assetDashboardRepair:2026-07-23-stock-codes-and-day-trades";
+      if (localStorage.getItem(repairKey)) return;
+      const dayTradeIds = new Set([20260714153407, 20260714153408]);
+      const entries = loadEntries();
+      entries.forEach(entry => {
+        if (entry.stock === "3443") entry.stock = "3017";
+        if (dayTradeIds.has(Number(entry.id))) entry.dayTrade = true;
+      });
+      saveEntries(entries);
+      localStorage.removeItem("assetDashboardQuoteCache");
+      rebuildLedgerFromEntries(entries);
+      localStorage.setItem(repairKey, "1");
+    }
+
     function accountLabel(id) {
       return accountDefs[id]?.name || id || "-";
     }
@@ -2804,7 +2821,7 @@
 
     const stockNames = {
       "2303": "聯電",
-      "3443": "奇鋐",
+      "3017": "奇鋐",
       "3481": "群創",
       "5443": "均豪",
     };
@@ -2853,9 +2870,11 @@
     function sellHolding({ code, shares }) {
       if (!code || shares <= 0) throw new Error("請填股票代號與股數");
       const normalized = code.trim().toUpperCase();
-      const holding = holdings.find(item => item.code.toUpperCase() === normalized);
+      const holdingIndex = holdings.findIndex(item => item.code.toUpperCase() === normalized);
+      const holding = holdings[holdingIndex];
       if (!holding) throw new Error(`找不到持股 ${normalized}`);
       holding.qty = Math.max(0, (Number(holding.qty) || 0) - shares);
+      if (holding.qty === 0) holdings.splice(holdingIndex, 1);
     }
 
     function applyEntry(entry, options = {}) {
@@ -2883,16 +2902,16 @@
         changeAccount(entry.toAccount, amount);
       } else if (entry.type === "buy_yuanta") {
         changeAccount("yuanta_settle", -(amount + fee));
-        buyHolding({ ...stockPayload, broker: "元大證券" });
+        if (!entry.dayTrade) buyHolding({ ...stockPayload, broker: "元大證券" });
       } else if (entry.type === "sell_yuanta") {
         changeAccount("yuanta_settle", amount - fee - tax);
-        sellHolding(stockPayload);
+        if (!entry.dayTrade) sellHolding(stockPayload);
       } else if (entry.type === "buy_federal") {
         changeAccount("federal_twd", -(amount + fee));
-        buyHolding({ ...stockPayload, broker: "聯邦證券" });
+        if (!entry.dayTrade) buyHolding({ ...stockPayload, broker: "聯邦證券" });
       } else if (entry.type === "sell_federal") {
         changeAccount("federal_twd", amount - fee - tax);
-        sellHolding(stockPayload);
+        if (!entry.dayTrade) sellHolding(stockPayload);
       }
 
       if (persist) {
@@ -3247,6 +3266,7 @@
     applyImportBatchesOnce();
     correctJuly13TradeDatesOnce();
     repairJuly14LedgerOnce();
+    repairStockCodesAndDayTradesOnce();
     renderAll();
     refreshRatesOnly();
     setInterval(autoRefreshTick, 60000);
